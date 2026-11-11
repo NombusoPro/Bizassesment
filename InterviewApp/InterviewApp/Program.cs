@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using InterviewApp.Models;
+using InterviewApp.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using InterviewApp.Services;
+using System;
+using System.Threading.Tasks;
 
 class Program
 {
@@ -13,7 +15,11 @@ class Program
             {
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
-            .ConfigureServices((_, services) => { services.AddTransient<IGreetingService, GreetingService>(); })
+            .ConfigureServices((context, services) =>
+            {  
+                services.Configure<GreetingOptions>(context.Configuration.GetSection("Greeting"));
+                services.AddTransient<IGreetingService, GreetingService>(); 
+            })
             .Build();
 
         var greetingService = host.Services.GetRequiredService<IGreetingService>();
