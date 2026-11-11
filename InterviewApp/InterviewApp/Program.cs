@@ -22,6 +22,7 @@ class Program
                 services.Configure<GreetingOptions>(context.Configuration.GetSection("Greeting"));
                 services.AddTransient<IGreetingService, GreetingService>();
                 services.AddTransient<ITimeGreetingService, TimeGreetingService>();
+                services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
             })
             .Build();
 
