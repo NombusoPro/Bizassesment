@@ -21,6 +21,7 @@ class Program
             {
                 services.Configure<GreetingOptions>(context.Configuration.GetSection("Greeting"));
                 services.AddTransient<IGreetingService, GreetingService>();
+                services.AddTransient<ITimeGreetingService, TimeGreetingService>();
             })
             .Build();
 
