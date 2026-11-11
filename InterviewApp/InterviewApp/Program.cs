@@ -1,5 +1,7 @@
-﻿using InterviewApp.Models;
+﻿using InterviewApp.Features.Greetings;
+using InterviewApp.Models;
 using InterviewApp.Services;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,10 +12,10 @@ using System.Threading.Tasks;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
         using IHost host = Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((context, config) =>
+            .ConfigureAppConfiguration((_, config) =>
             {
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
@@ -26,19 +28,28 @@ class Program
             })
             .Build();
 
-
-        var options = host.Services.GetRequiredService<IOptions<GreetingOptions>>().Value;
         var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
-        if (string.IsNullOrWhiteSpace(options.Message) || string.IsNullOrWhiteSpace(options.Language))
+        try
         {
-            logger.LogError("Invalid configuration: Greeting:Message and Greeting:Language are required.");
-            return;
+            var options = host.Services.GetRequiredService<IOptions<GreetingOptions>>().Value;
+
+            if (string.IsNullOrWhiteSpace(options.Message) || string.IsNullOrWhiteSpace(options.Language))
+            {
+                logger.LogError("Invalid configuration: Greeting:Message and Greeting:Language are required.");
+                return 1;
+            }
+
+            var mediator = host.Services.GetRequiredService<IMediator>();
+            var greeting = await mediator.Send(new GreetUserCommand());
+
+            Console.WriteLine(greeting);
+            return 0;
         }
-
-        var greetingService = host.Services.GetRequiredService<IGreetingService>();
-        greetingService.Run();
-
-        await host.RunAsync();
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "The application failed while producing a greeting.");
+            return 1;
+        }
     }
 }

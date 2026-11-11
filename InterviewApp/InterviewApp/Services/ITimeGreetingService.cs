@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace InterviewApp.Services;
 
-namespace InterviewApp.Services
+// Returns a greeting that depends on the current time of day.
+public interface ITimeGreetingService
 {
-    public interface ITimeGreetingService
-    {
-        string GetGreeting();
-    }
+    string GetGreeting();
 }
