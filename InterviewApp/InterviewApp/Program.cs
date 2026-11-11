@@ -3,6 +3,8 @@ using InterviewApp.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 
@@ -16,11 +18,21 @@ class Program
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
             .ConfigureServices((context, services) =>
-            {  
+            {
                 services.Configure<GreetingOptions>(context.Configuration.GetSection("Greeting"));
-                services.AddTransient<IGreetingService, GreetingService>(); 
+                services.AddTransient<IGreetingService, GreetingService>();
             })
             .Build();
+
+
+        var options = host.Services.GetRequiredService<IOptions<GreetingOptions>>().Value;
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
+        if (string.IsNullOrWhiteSpace(options.Message) || string.IsNullOrWhiteSpace(options.Language))
+        {
+            logger.LogError("Invalid configuration: Greeting:Message and Greeting:Language are required.");
+            return;
+        }
 
         var greetingService = host.Services.GetRequiredService<IGreetingService>();
         greetingService.Run();
